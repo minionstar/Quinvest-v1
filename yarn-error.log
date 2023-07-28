@@ -1,5 +1,5 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Users\polar\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add @nomiclabs/hardhat-etherscan
+  C:\Program Files\nodejs\node.exe C:\Users\polar\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add @nomiclabs/hardhat-waffle
 
 PATH: 
   C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\Git\cmd;C:\Users\polar\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\nodejs\;C:\Users\polar\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\polar\AppData\Local\Programs\Python\Python311\;C:\Users\polar\AppData\Local\Microsoft\WindowsApps;C:\Users\polar\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\polar\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\polar\AppData\Roaming\npm

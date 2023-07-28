@@ -79,7 +79,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     function stakeToken(
         uint256 stakeAmount,
         uint8 stakeType
-    ) external payable whenNotPaused {
+    ) external whenNotPaused {
         require(stakeAmount > 0, "Stake amount should be correct");
         require(
             addressStaked[_msgSender()] == false,
@@ -120,7 +120,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     }
 
     // before call this fucntion, must call getRewardAmount function.
-    function claimRQNV() external {
+    function claimRQNV() external whenNotPaused {
         // check the user already joined.
         require(
             addressStaked[_msgSender()] == true,
@@ -151,7 +151,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     }
 
     // withdraw all USDT was staked.
-    function withdrawAll() external {
+    function withdrawAll() external whenNotPaused{
         require(
             addressStaked[_msgSender()] == true,
             "You are not participated"
@@ -170,7 +170,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     }
 
     // redeem the USDT rewards
-    function redeemUSDT() external {
+    function redeemUSDT() external whenNotPaused{
         require(
             addressStaked[_msgSender()] == true,
             "You are not participated"
