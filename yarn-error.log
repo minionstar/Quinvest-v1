@@ -1,0 +1,34 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\polar\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add @nomiclabs/hardhat-etherscan
+
+PATH: 
+  C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\Git\cmd;C:\Users\polar\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\nodejs\;C:\Users\polar\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\polar\AppData\Local\Programs\Python\Python311\;C:\Users\polar\AppData\Local\Microsoft\WindowsApps;C:\Users\polar\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\polar\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\polar\AppData\Roaming\npm
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.16.0
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: EPERM: operation not permitted, unlink 'D:\work\FedericoStaking\Quinvest-v1\node_modules\@nomicfoundation\solidity-analyzer-win32-x64-msvc\solidity-analyzer.win32-x64-msvc.node'
+
+npm manifest: 
+  {
+    "devDependencies": {
+      "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+      "hardhat": "^2.17.0"
+    },
+    "dependencies": {
+      "openzeppelin-contracts": "^4.0.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
