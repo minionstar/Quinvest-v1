@@ -50,7 +50,6 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         uint256 endTS;
         uint256 claimedTS;
         uint256 amount;
-        uint256 claimed;
         uint256 interestRate;
     }
 
@@ -97,7 +96,6 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             endTS: block.timestamp + duration,
             claimedTS: block.timestamp,
             amount: stakeAmount,
-            claimed: 0,
             interestRate: stakeType == 1
                 ? interestRateWeekPlan
                 : (
@@ -141,8 +139,8 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         // total reward until now
         uint256 rewardAmount = (rewardPeriod % rewardCycle) *
             rewardPerRewardCycle;
-        stakeInfos[_msgSender()].claimed =
-            stakeInfos[_msgSender()].claimed +
+        stakeInfos[_msgSender()].claimedTS =
+            stakeInfos[_msgSender()].claimedTS +
             (rewardPeriod % rewardCycle) *
             rewardCycle;
 
@@ -166,6 +164,8 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
 
         // transfer the staked tokens excpet the penalty
         stableToken.transfer(_msgSender(), stakeAmount);
+        yQNVToken._burn(_msgSender(), stakeAmount);
+        rQNVToken._burn(_msgSender(), rQNVToken.balanceOf(_msgSender()));
         addressStaked[_msgSender()] == false;
     }
 

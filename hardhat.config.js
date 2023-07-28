@@ -4,10 +4,7 @@ require("@nomiclabs/hardhat-etherscan");
 
 module.exports = {
   defaultNetwork: "hardhat",
-  gasReporter: {
-    currency: 'CHF',
-    gasPrice: 21
-  },
+
   paths: {
     artifacts: './src/artifacts',
   },
@@ -22,5 +19,9 @@ module.exports = {
   solidity: "0.8.0",
   etherscan: {
     apiKey: "GD1SHMHGW2QF8PCGC5ED7CQ9SD3KYFHCBK",
+  },
+  gasReporter: {
+    currency: 'CHF',
+    gasPrice: 21
   },
 };

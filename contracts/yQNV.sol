@@ -75,7 +75,7 @@ contract YQNV is Context, IERC20Metadata, Ownable {
     string private _name;
     string private _symbol;
 
-    address admin;
+    address public admin;
 
     constructor() {
         _name = "YQNV Token";
