@@ -222,18 +222,5 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         }
     }
 
-    // for the test
-    function setStakeInfo(uint256 _startTS) external {
-        unchecked {
-            stakeInfos[_msgSender()].claimedTS =
-                stakeInfos[_msgSender()].startTS -
-                _startTS;
-        }
-    }
 
-    function setStakeInfoEnd(uint256 _endTS) external {
-        unchecked {
-            stakeInfos[_msgSender()].endTS = _endTS;
-        }
-    }
 }
