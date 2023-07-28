@@ -83,7 +83,26 @@ describe("test QNV token", function () {
         console.log(ethers.utils.formatEther(allowedAmount));
         expect(await yqnvToken.balanceOf(user.address)).to.be.equal(parseEther((ethers.utils.formatEther(allowedAmount)).toString()));
 
+        //claim test
+        let offset = 60 * 60 * 24 * 7 + 1;
+        let stakeinfo = await treasuryContract.connect(user).getStakedInfo();
+        console.log("start time", stakeinfo['startTS'])
+        await treasuryContract.connect(user).setStakeInfo(offset);
+        let stakeInfo = await treasuryContract.connect(user).getStakedInfo();
+        console.log("start time", stakeInfo['claimedTS'])
+
+
+        await treasuryContract.connect(user).claimRQNV();
+        console.log("after claim", await rqnvToken.balanceOf(user.address))
+        await treasuryContract.connect(user).redeemUSDT();
+        console.log("after redeem", await rqnvToken.balanceOf(user.address))
+
+        console.log(await yqnvToken.balanceOf(user.address));
+
+        console.log("usdt amount before withdraw",await usdtToken.balanceOf(user.address))
+        await treasuryContract.connect(user).setStakeInfoEnd(offset);
         await treasuryContract.connect(user).withdrawAll();
+        console.log("usdt amount after withdraw",await usdtToken.balanceOf(user.address))
     })
 
 });

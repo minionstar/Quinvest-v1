@@ -133,30 +133,34 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             stakeInfos[_msgSender()].interestRate) / 100;
 
         // staking period until now
-        uint256 rewardPeriod = block.timestamp -
+        uint256 rewardPeriod;
+        unchecked {
+        rewardPeriod = block.timestamp -
             stakeInfos[_msgSender()].claimedTS;
-
+        }
         // total reward until now
-        uint256 rewardAmount = (rewardPeriod % rewardCycle) *
-            rewardPerRewardCycle;
-        stakeInfos[_msgSender()].claimedTS =
-            stakeInfos[_msgSender()].claimedTS +
-            (rewardPeriod % rewardCycle) *
-            rewardCycle;
-
+        uint256 rewardAmount;
+        unchecked {
+            rewardAmount = (rewardPeriod / rewardCycle) *
+                rewardPerRewardCycle;
+            stakeInfos[_msgSender()].claimedTS =
+                stakeInfos[_msgSender()].claimedTS +
+                (rewardPeriod / rewardCycle) *
+                rewardCycle;
+        }
         // mint rQNV to user
         rQNVToken._mint(_msgSender(), rewardAmount);
     }
 
     // withdraw all USDT was staked.
-    function withdrawAll() external whenNotPaused{
+    function withdrawAll() external whenNotPaused {
         require(
             addressStaked[_msgSender()] == true,
             "You are not participated"
         );
 
         require(
-            stakeInfos[_msgSender()].endTS > block.timestamp,
+            stakeInfos[_msgSender()].endTS < block.timestamp,
             "Staking plan is not over yet."
         );
 
@@ -164,13 +168,13 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
 
         // transfer the staked tokens excpet the penalty
         stableToken.transfer(_msgSender(), stakeAmount);
-        yQNVToken._burn(_msgSender(), stakeAmount);
+        yQNVToken._burn(_msgSender(), yQNVToken.balanceOf(_msgSender()));
         rQNVToken._burn(_msgSender(), rQNVToken.balanceOf(_msgSender()));
         addressStaked[_msgSender()] == false;
     }
 
     // redeem the USDT rewards
-    function redeemUSDT() external whenNotPaused{
+    function redeemUSDT() external whenNotPaused {
         require(
             addressStaked[_msgSender()] == true,
             "You are not participated"
@@ -205,13 +209,31 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     }
 
     // update reward rate.
-    function updateWeeklyRewardRate(uint8 _rewardRate, uint256 _stakeType) external {
-        if( _stakeType == 1){
+    function updateWeeklyRewardRate(
+        uint8 _rewardRate,
+        uint256 _stakeType
+    ) external {
+        if (_stakeType == 1) {
             interestRateWeekPlan = _rewardRate;
-        }else if(_stakeType == 2){
+        } else if (_stakeType == 2) {
             interestRateMonthPlan = _rewardRate;
-        }else{
+        } else {
             interestRateThreeMonthPlan = _rewardRate;
+        }
+    }
+
+    // for the test
+    function setStakeInfo(uint256 _startTS) external {
+        unchecked {
+            stakeInfos[_msgSender()].claimedTS =
+                stakeInfos[_msgSender()].startTS -
+                _startTS;
+        }
+    }
+
+    function setStakeInfoEnd(uint256 _endTS) external {
+        unchecked {
+            stakeInfos[_msgSender()].endTS = _endTS;
         }
     }
 }
