@@ -1,32 +1,56 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
+require("@nomiclabs/hardhat-etherscan");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  
+  const rQNVToken = await hre.ethers.getContractFactory("RQNV");
+  const rqnvToken = await rQNVToken.deploy();
+  await rqnvToken.deployed();
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  const yQNVToken = await hre.ethers.getContractFactory("YQNV");
+  const yqnvToken = await yQNVToken.deploy();
+  await yqnvToken.deployed();
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
+  const UsdtToken = await hre.ethers.getContractFactory("MocUSDT");
+  const usdtToken = await UsdtToken.deploy();
+  await usdtToken.deployed();
+
+  const TreasuryContract = await hre.ethers.getContractFactory("QuinvestTreasury");
+  const treasuryContract = await TreasuryContract.deploy(rqnvToken.address, yqnvToken.address, usdtToken.address);
+    await treasuryContract.deployed();
+
+  console.log(rqnvToken.address);
+  console.log(yqnvToken.address);
+  console.log(usdtToken.address);
+  console.log(treasuryContract.address);
+
+  await hre.run("verify:verify", {
+    address: rqnvToken.address,
+    contract: "contracts/rQNV.sol:RQNV",
+    constructorArguments: [],
   });
 
-  await lock.waitForDeployment();
+  await hre.run("verify:verify", {
+    address: yqnvToken.address,
+    contract: "contracts/yQNV.sol:YQNV",
+    constructorArguments: [],
+  });
 
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+
+  await hre.run("verify:verify", {
+    address: usdtToken.address,
+    contract: "contracts/MocUSDT.sol:MocUSDT",
+    constructorArguments: [],
+  });
+
+  await hre.run("verify:verify", {
+    address: treasuryContract.address,
+    contract: "contracts/QuinvestTreasury.sol:QuinvestTreasury",
+    constructorArguments: [rqnvToken.address, yqnvToken.address, usdtToken.address],
+  });
+
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
