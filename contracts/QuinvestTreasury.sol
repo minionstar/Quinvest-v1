@@ -18,12 +18,15 @@ interface IQNVToken {
 }
 
 contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
-    IQNVToken rQNVToken;
-    IQNVToken yQNVToken;
-    IERC20 stableToken;
+    IQNVToken public rQNVToken;
+    IQNVToken public yQNVToken;
+    IERC20 public stableToken;
 
-    // 7 Days (7 * 24 * 60 * 60)
+    //7 Days (7 * 24 * 60 * 60)
     uint256 public weekPlanDuration = 604800; //set this value 0 when test claim.
+
+    // 30mins (3 * 60) for test
+    uint256 public rewardCycle = 180;
 
     // 30 Days (30 * 24 * 60 * 60)
     uint256 public monthPlanDuration = 2592000;
@@ -32,10 +35,9 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     uint256 public threeMonthPlanDuration = 7776000;
 
     // reward rate per week of each plan
-    uint8 public interestRateWeekPlan = 5;
-    uint8 public interestRateMonthPlan = 5;
-    uint8 public interestRateThreeMonthPlan = 5;
-    uint256 public planExpired;
+    uint8 public interestRateWeekPlan = 1;
+    uint8 public interestRateMonthPlan = 1;
+    uint8 public interestRateThreeMonthPlan = 1;
     uint8 public totalStakers;
 
     /*
@@ -51,6 +53,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         uint256 claimedTS;
         uint256 amount;
         uint256 interestRate;
+        uint256 claimed;
     }
 
     event Staked(address indexed from, uint256 amount);
@@ -60,18 +63,18 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     mapping(address => bool) public addressStaked;
 
     constructor(
-        IQNVToken _rQNVAddress, // ERC20 token to check the reward amount
-        IQNVToken _yQNVAddress, // ERC20 token to check the staked amount
-        IERC20 _stableTokenAddress // ERC20 token to be staked
+        address _rQNVAddress, // ERC20 token to check the reward amount
+        address _yQNVAddress, // ERC20 token to check the staked amount
+        address _stableTokenAddress // ERC20 token to be staked
     ) {
         require(
-            (address(_rQNVAddress) != address(0) &&
-                address(_yQNVAddress) != address(0)),
+            (_rQNVAddress != address(0) &&
+                _yQNVAddress != address(0)),
             "Token Address cannot be address 0"
         );
-        yQNVToken = _yQNVAddress;
-        rQNVToken = _rQNVAddress;
-        stableToken = _stableTokenAddress;
+        yQNVToken = IQNVToken(_yQNVAddress);
+        rQNVToken = IQNVToken(_rQNVAddress);
+        stableToken = IERC20(_stableTokenAddress);
         totalStakers = 0;
     }
 
@@ -102,7 +105,8 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
                     stakeType == 2
                         ? interestRateMonthPlan
                         : interestRateThreeMonthPlan
-                )
+                ),
+            claimed: 0
         });
 
         // send stable token from user to the treasury
@@ -124,9 +128,6 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             addressStaked[_msgSender()] == true,
             "You are not participated"
         );
-
-        // user will get reward per week
-        uint256 rewardCycle = weekPlanDuration;
 
         //reward per week
         uint256 rewardPerRewardCycle = (stakeInfos[_msgSender()].amount *
@@ -150,6 +151,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         }
         // mint rQNV to user
         rQNVToken._mint(_msgSender(), rewardAmount);
+        stakeInfos[_msgSender()].claimed += rewardAmount;
     }
 
     // withdraw all USDT was staked.
@@ -171,6 +173,14 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         yQNVToken._burn(_msgSender(), yQNVToken.balanceOf(_msgSender()));
         rQNVToken._burn(_msgSender(), rQNVToken.balanceOf(_msgSender()));
         addressStaked[_msgSender()] == false;
+        stakeInfos[_msgSender()] = StakeInfo({
+            startTS: 0,
+            endTS: 0,
+            claimedTS: 0,
+            amount: 0,
+            interestRate: 0,
+            claimed: 0
+        });
     }
 
     // redeem the USDT rewards
@@ -187,6 +197,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
 
         stableToken.transfer(_msgSender(), rQNVToken.balanceOf(_msgSender()));
         rQNVToken._burn(_msgSender(), rQNVToken.balanceOf(_msgSender()));
+        stakeInfos[_msgSender()].claimed = 0;
     }
 
     function pause() external onlyOwner {
