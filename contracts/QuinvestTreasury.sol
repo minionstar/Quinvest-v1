@@ -22,11 +22,14 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     IQNVToken public yQNVToken;
     IERC20 public stableToken;
 
+    // reward cycle 1min 1 * 60 for test.
+    uint256 public rewardCycle = 60;
+
+    // reward cycle for production a week
+    // int256 public rewardCycle = 604800;
+
     //7 Days (7 * 24 * 60 * 60)
     uint256 public weekPlanDuration = 604800; //set this value 0 when test claim.
-
-    // 30mins (3 * 60) for test
-    uint256 public rewardCycle = 180;
 
     // 30 Days (30 * 24 * 60 * 60)
     uint256 public monthPlanDuration = 2592000;
@@ -68,8 +71,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         address _stableTokenAddress // ERC20 token to be staked
     ) {
         require(
-            (_rQNVAddress != address(0) &&
-                _yQNVAddress != address(0)),
+            (_rQNVAddress != address(0) && _yQNVAddress != address(0)),
             "Token Address cannot be address 0"
         );
         yQNVToken = IQNVToken(_yQNVAddress);
@@ -114,6 +116,9 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
 
         // mint QNV token to user according to the staked stable token amount
         yQNVToken._mint(_msgSender(), stakeAmount);
+        uint256 rewardGift =  stakeAmount * stakeInfos[_msgSender()].interestRate / 100;
+        stakeInfos[_msgSender()].claimed += rewardGift;
+        rQNVToken._mint(_msgSender(), rewardGift);
 
         totalStakers++;
         addressStaked[_msgSender()] = true;
@@ -129,6 +134,11 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             "You are not participated"
         );
 
+        require(
+            block.timestamp - stakeInfos[_msgSender()].claimedTS > rewardCycle,
+            "You can claim after a week from your last claim."
+        );
+
         //reward per week
         uint256 rewardPerRewardCycle = (stakeInfos[_msgSender()].amount *
             stakeInfos[_msgSender()].interestRate) / 100;
@@ -136,14 +146,12 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         // staking period until now
         uint256 rewardPeriod;
         unchecked {
-        rewardPeriod = block.timestamp -
-            stakeInfos[_msgSender()].claimedTS;
+            rewardPeriod = block.timestamp - stakeInfos[_msgSender()].claimedTS;
         }
         // total reward until now
         uint256 rewardAmount;
         unchecked {
-            rewardAmount = (rewardPeriod / rewardCycle) *
-                rewardPerRewardCycle;
+            rewardAmount = (rewardPeriod / rewardCycle) * rewardPerRewardCycle;
             stakeInfos[_msgSender()].claimedTS =
                 stakeInfos[_msgSender()].claimedTS +
                 (rewardPeriod / rewardCycle) *
@@ -232,6 +240,4 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             interestRateThreeMonthPlan = _rewardRate;
         }
     }
-
-
 }

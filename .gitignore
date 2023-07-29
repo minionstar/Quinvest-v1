@@ -11,3 +11,4 @@ artifacts
 yarn-error.log
 package-lock.json
 
+./scripts/deploy_test.js

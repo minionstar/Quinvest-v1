@@ -15,17 +15,6 @@ async function main() {
   const usdtToken = await UsdtToken.deploy();
   await usdtToken.deployed();
 
-  // const rqnvToken_address = "0x4f19845D322eEA728fAd44fc10155d8e9074d268"
-  // const yqnvToken_address = "0x904Bd643b9652b012fe1c55594e4F3adb58A213F"
-  // const usdtToken_address = "0xd9d514310b75FFF183fE5e24A8B8Bb9C82AE4D53"
-
-  // const TreasuryContract = await hre.ethers.getContractFactory("QuinvestTreasury");
-  // const treasuryContract = await TreasuryContract.deploy(rqnvToken_address, yqnvToken_address, usdtToken_address);
-  // await treasuryContract.deployed();
-
-   
-
-
   const TreasuryContract = await hre.ethers.getContractFactory("QuinvestTreasury");
   const treasuryContract = await TreasuryContract.deploy(rqnvToken.address, yqnvToken.address, usdtToken.address);
   await treasuryContract.deployed();
