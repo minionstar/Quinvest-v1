@@ -22,11 +22,8 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     IQNVToken public yQNVToken;
     IERC20 public stableToken;
 
-    // reward cycle 1min 1 * 60 for test.
-    // uint256 public rewardCycle = 60;
-
     // reward cycle for production a week
-    int256 public rewardCycle = 604800;
+    uint256 public rewardCycle = 604800;
 
     //7 Days (7 * 24 * 60 * 60)
     uint256 public weekPlanDuration = 604800; //set this value 0 when test claim.
@@ -133,7 +130,6 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             addressStaked[_msgSender()] == true,
             "You are not participated"
         );
-
         require(
             block.timestamp - stakeInfos[_msgSender()].claimedTS > rewardCycle,
             "You can claim after a week from your last claim."
