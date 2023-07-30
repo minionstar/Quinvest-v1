@@ -23,10 +23,10 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     IERC20 public stableToken;
 
     // reward cycle 1min 1 * 60 for test.
-    uint256 public rewardCycle = 60;
+    // uint256 public rewardCycle = 60;
 
     // reward cycle for production a week
-    // int256 public rewardCycle = 604800;
+    int256 public rewardCycle = 604800;
 
     //7 Days (7 * 24 * 60 * 60)
     uint256 public weekPlanDuration = 604800; //set this value 0 when test claim.
@@ -38,9 +38,9 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     uint256 public threeMonthPlanDuration = 7776000;
 
     // reward rate per week of each plan
-    uint8 public interestRateWeekPlan = 1;
-    uint8 public interestRateMonthPlan = 1;
-    uint8 public interestRateThreeMonthPlan = 1;
+    uint8 public interestRateWeekPlan = 5;
+    uint8 public interestRateMonthPlan = 5;
+    uint8 public interestRateThreeMonthPlan = 5;
     uint8 public totalStakers;
 
     /*
