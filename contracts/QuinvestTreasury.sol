@@ -113,7 +113,8 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
 
         // mint QNV token to user according to the staked stable token amount
         yQNVToken._mint(_msgSender(), stakeAmount);
-        uint256 rewardGift =  stakeAmount * stakeInfos[_msgSender()].interestRate / 100;
+        uint256 rewardGift = (stakeAmount *
+            stakeInfos[_msgSender()].interestRate) / 100;
         stakeInfos[_msgSender()].claimed += rewardGift;
         rQNVToken._mint(_msgSender(), rewardGift);
 
@@ -216,11 +217,12 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         return stakeInfos[_msgSender()];
     }
 
-    function withdrawFunds() external onlyOwner {
-        stableToken.transfer(
-            _msgSender(),
-            stableToken.balanceOf(address(this))
+    function withdrawFunds(uint256 amount) external onlyOwner {
+        require(
+            stableToken.balanceOf(_msgSender()) > amount,
+            "Inficiant funds"
         );
+        stableToken.transfer(_msgSender(), amount);
     }
 
     // update reward rate.
