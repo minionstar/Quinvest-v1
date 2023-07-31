@@ -22,6 +22,8 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     IQNVToken public yQNVToken;
     IERC20 public stableToken;
 
+    uint256 public usdtDecimal = 6;
+    uint256 public qnvDecimal = 18;
     // reward cycle for production a week
     uint256 public rewardCycle = 604800;
 
@@ -87,7 +89,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             "You already participated"
         );
         require(
-            stableToken.balanceOf(_msgSender()) >= stakeAmount,
+            stableToken.balanceOf(_msgSender()) >= stakeAmount * 10 ** usdtDecimal / (10 ** qnvDecimal),
             "Insufficient Balance"
         );
         uint256 duration = stakeType == 1
@@ -109,7 +111,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         });
 
         // send stable token from user to the treasury
-        stableToken.transferFrom(_msgSender(), address(this), stakeAmount);
+        stableToken.transferFrom(_msgSender(), address(this), stakeAmount  * 10 ** usdtDecimal / (10 ** qnvDecimal));
 
         // mint QNV token to user according to the staked stable token amount
         yQNVToken._mint(_msgSender(), stakeAmount);
@@ -174,7 +176,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         uint stakeAmount = stakeInfos[_msgSender()].amount;
 
         // transfer the staked tokens excpet the penalty
-        stableToken.transfer(_msgSender(), stakeAmount);
+        stableToken.transfer(_msgSender(), stakeAmount * 10 ** usdtDecimal / (10 ** qnvDecimal));
         yQNVToken._burn(_msgSender(), yQNVToken.balanceOf(_msgSender()));
         rQNVToken._burn(_msgSender(), rQNVToken.balanceOf(_msgSender()));
         addressStaked[_msgSender()] == false;
@@ -200,7 +202,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             "You didn't claim. Please claim first and redeem."
         );
 
-        stableToken.transfer(_msgSender(), rQNVToken.balanceOf(_msgSender()));
+        stableToken.transfer(_msgSender(), rQNVToken.balanceOf(_msgSender())  * 10 ** usdtDecimal / (10 ** qnvDecimal));
         rQNVToken._burn(_msgSender(), rQNVToken.balanceOf(_msgSender()));
         stakeInfos[_msgSender()].claimed = 0;
     }
@@ -219,7 +221,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
 
     function withdrawFunds(uint256 amount) external onlyOwner {
         require( stableToken.balanceOf(_msgSender()) > amount, "Inficiant funds");
-        stableToken.transfer(_msgSender(), amount);
+        stableToken.transfer(_msgSender(), amount  * 10 ** usdtDecimal / (10 ** qnvDecimal));
     }
 
     // update reward rate.
