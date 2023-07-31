@@ -218,10 +218,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     }
 
     function withdrawFunds(uint256 amount) external onlyOwner {
-        require(
-            stableToken.balanceOf(_msgSender()) > amount,
-            "Inficiant funds"
-        );
+        require( stableToken.balanceOf(_msgSender()) > amount, "Inficiant funds");
         stableToken.transfer(_msgSender(), amount);
     }
 

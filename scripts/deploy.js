@@ -37,7 +37,6 @@ async function main() {
         contract: "contracts/QuinvestTreasury.sol:QuinvestTreasury",
         constructorArguments: [rqnvToken.address, yqnvToken.address, usdtAddress],
     });
-
 }
 
 main().catch((error) => {
