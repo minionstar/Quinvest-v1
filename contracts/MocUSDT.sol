@@ -72,7 +72,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     }
 
     function decimals() public view virtual override returns (uint8) {
-        return 18;
+        return 6;
     }
 
     function totalSupply() public view virtual override returns (uint256) {
@@ -286,7 +286,7 @@ abstract contract Ownable is Context {
 }
 contract MocUSDT is ERC20 {
     constructor() ERC20("MocUSDT", "MocUSDT") {
-        _mint(_msgSender(), 100000 * (10 ** 18));
+        _mint(_msgSender(), 100000 * (10 ** 6));
     }
 }
 
