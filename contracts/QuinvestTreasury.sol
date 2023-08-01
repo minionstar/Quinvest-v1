@@ -19,7 +19,6 @@ interface IQNVToken {
 }
 
 contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
-
     using SafeERC20 for IERC20;
 
     IQNVToken public rQNVToken;
@@ -58,6 +57,7 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         uint256 amount;
         uint256 interestRate;
         uint256 claimed;
+        uint256 getGift;
     }
 
     event Staked(address indexed from, uint256 amount);
@@ -81,12 +81,12 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
         totalStakers = 0;
     }
 
-    receive() external payable{}
+    receive() external payable {}
 
-    function stakeToken ( 
+    function stakeToken(
         uint256 stakeAmount,
         uint8 stakeType
-    ) external whenNotPaused payable{
+    ) external payable whenNotPaused {
         require(stakeAmount > 0, "Stake amount should be correct");
         require(
             addressStaked[_msgSender()] == false,
@@ -111,18 +111,15 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
                         ? interestRateMonthPlan
                         : interestRateThreeMonthPlan
                 ),
-            claimed: 0
+            claimed: 0,
+            getGift: 0
         });
 
         // send stable token from user to the treasury
-        stableToken.safeTransferFrom(_msgSender(), address(this), stakeAmount );
+        stableToken.safeTransferFrom(_msgSender(), address(this), stakeAmount);
 
         // mint QNV token to user according to the staked stable token amount
         yQNVToken._mint(_msgSender(), stakeAmount);
-        uint256 rewardGift = (stakeAmount *
-            stakeInfos[_msgSender()].interestRate) / 100;
-        stakeInfos[_msgSender()].claimed += rewardGift;
-        rQNVToken._mint(_msgSender(), rewardGift);
 
         totalStakers++;
         addressStaked[_msgSender()] = true;
@@ -137,32 +134,49 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             addressStaked[_msgSender()] == true,
             "You are not participated"
         );
-        require(
-            block.timestamp - stakeInfos[_msgSender()].claimedTS > rewardCycle,
-            "You can claim after a week from your last claim."
-        );
 
-        //reward per week
-        uint256 rewardPerRewardCycle = (stakeInfos[_msgSender()].amount *
-            stakeInfos[_msgSender()].interestRate) / 100;
+        // gift
+        if (
+            (stakeInfos[_msgSender()].claimed == 0) && (stakeInfos[_msgSender()].claimedTS == stakeInfos[_msgSender()].startTS) && (stakeInfos[_msgSender()].getGift == 0 )
+        ) {
+            uint256 rewardGift = (stakeInfos[_msgSender()].amount *
+                stakeInfos[_msgSender()].interestRate) / 100;
+            rQNVToken._mint(_msgSender(), rewardGift);
+            stakeInfos[_msgSender()].claimed += rewardGift;
+            stakeInfos[_msgSender()].getGift = 1;
+        } else { // normal
+            require(
+                block.timestamp - stakeInfos[_msgSender()].claimedTS >
+                    rewardCycle,
+                "You can claim after a week from your last claim."
+            );
 
-        // staking period until now
-        uint256 rewardPeriod;
-        unchecked {
-            rewardPeriod = block.timestamp - stakeInfos[_msgSender()].claimedTS;
+            //reward per week
+            uint256 rewardPerRewardCycle = (stakeInfos[_msgSender()].amount *
+                stakeInfos[_msgSender()].interestRate) / 100;
+
+            // staking period until now
+            uint256 rewardPeriod;
+            unchecked {
+                rewardPeriod =
+                    block.timestamp -
+                    stakeInfos[_msgSender()].claimedTS;
+            }
+            // total reward until now
+            uint256 rewardAmount;
+            unchecked {
+                rewardAmount =
+                    (rewardPeriod / rewardCycle) *
+                    rewardPerRewardCycle;
+                stakeInfos[_msgSender()].claimedTS =
+                    stakeInfos[_msgSender()].claimedTS +
+                    (rewardPeriod / rewardCycle) *
+                    rewardCycle;
+            }
+            // mint rQNV to user
+            rQNVToken._mint(_msgSender(), rewardAmount);
+            stakeInfos[_msgSender()].claimed += rewardAmount;
         }
-        // total reward until now
-        uint256 rewardAmount;
-        unchecked {
-            rewardAmount = (rewardPeriod / rewardCycle) * rewardPerRewardCycle;
-            stakeInfos[_msgSender()].claimedTS =
-                stakeInfos[_msgSender()].claimedTS +
-                (rewardPeriod / rewardCycle) *
-                rewardCycle;
-        }
-        // mint rQNV to user
-        rQNVToken._mint(_msgSender(), rewardAmount);
-        stakeInfos[_msgSender()].claimed += rewardAmount;
     }
 
     // withdraw all USDT was staked.
@@ -198,7 +212,10 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
             "You didn't claim. Please claim first and redeem."
         );
 
-        stableToken.safeTransfer(_msgSender(), rQNVToken.balanceOf(_msgSender()));
+        stableToken.safeTransfer(
+            _msgSender(),
+            rQNVToken.balanceOf(_msgSender())
+        );
         rQNVToken._burn(_msgSender(), rQNVToken.balanceOf(_msgSender()));
         stakeInfos[_msgSender()].claimed = 0;
     }
@@ -216,8 +233,11 @@ contract QuinvestTreasury is Pausable, Ownable, ReentrancyGuard {
     }
 
     function withdrawFunds(uint256 amount) external onlyOwner {
-        require( stableToken.balanceOf(_msgSender()) > amount, "Inficiant funds");
-        stableToken.safeTransfer(_msgSender(), amount );
+        require(
+            stableToken.balanceOf(_msgSender()) > amount,
+            "Inficiant funds"
+        );
+        stableToken.safeTransfer(_msgSender(), amount);
     }
 
     // update reward rate.
